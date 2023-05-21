@@ -1,0 +1,36 @@
+herramientas con las que se esta trabajando
+
+configurar el package.json para usar la sintaxis js escribir type: module
+
+1.express
+-nodemon
+
+2.mongodb
+-mongoose
+cuenta con una gran variedad de metodos que ayudan con las colsultas en la base de datos 
+
+3.Postman
+-probar las peticiones http (endpoint)
+
+4.dependencia bcrypt para no visualizar las passwoord
+--Arquitectura que se esta implementando MVC || MODEL VIEW CONTROLLER
+
+5.JSON web token 
+
+6.front endpoin
+-Vite
+-axios
+-react-router-dom
+
+7.nodemailer y mailtrap
+-para creacion de e-mail y servicios 
+
+-creando rutas publicas en authLayout 
+
+MODEL
+esta encargado con todo lo relacionado con los datos, base de datos y el CRUD
+
+VIEW
+se encarga de todo lo que se ve en pantalla 
+el modelo se encarga de consultar la base de datos pero en la vista se encarga de mostrar ese resultado
+
