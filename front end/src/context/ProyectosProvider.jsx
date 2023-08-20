@@ -11,6 +11,9 @@ const ProyectosProvider = ({ children }) => {
   const [proyecto, setProyecto] = useState({})
   const [cargando1, setCargando1] = useState(false)
   const [modalFormularioTarea, setModalFormularioTarea] = useState(false)
+  const [tarea, setTarea] = useState({})
+  const [modalEliminar, setModalEliminar] = useState(false)
+
   const navigate = useNavigate()
 
   const mostrarAlerta = alerta => {
@@ -56,7 +59,7 @@ const ProyectosProvider = ({ children }) => {
   }
 
   const editarProyecto = async proyecto => {
-    
+
     try {
       const token = localStorage.getItem('token')
       if (!token) return
@@ -72,7 +75,7 @@ const ProyectosProvider = ({ children }) => {
       const proyectoActualizados = proyectos.map(proyectoExistente => proyectoExistente._id === data._id ?
         data : proyectoExistente)
 
-      
+
       setProyectos(proyectoActualizados)
 
       setAlerta({
@@ -154,11 +157,11 @@ const ProyectosProvider = ({ children }) => {
       }
 
       const { data } = await clienteAxios.delete(`/proyectos/${id}`, config)
-      
+
       //sincronizar el state
-        const ProyectosAtualizados = proyectos.filter(proyectosExistentes => proyectosExistentes._id !== id )
-        
-        setProyectos(ProyectosAtualizados)
+      const ProyectosAtualizados = proyectos.filter(proyectosExistentes => proyectosExistentes._id !== id)
+
+      setProyectos(ProyectosAtualizados)
 
       setAlerta({
         msg: data.msg,
@@ -176,8 +179,123 @@ const ProyectosProvider = ({ children }) => {
 
   const handleModalTarea = () => {
     setModalFormularioTarea(!modalFormularioTarea)
+    setTarea({})
   }
-  
+  const submitTarea = async tarea => {
+
+    if (tarea?.id) {
+      await EditarTarea(tarea)
+    } else {
+      await crearTarea(tarea)
+    }
+
+
+  }
+  const EditarTarea = async (tarea) => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) return
+
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      }
+
+      const { data } = await clienteAxios.put(`/tareas/${tarea.id}`, tarea, config)
+
+      //creando una copia del proyecto
+      const proyectoActualizado = { ...proyecto }
+      //utilizando la copia para iterar en el arreglo de tareas para identificar la tarea modificada
+      proyectoActualizado.tareas = proyectoActualizado.tareas.map(tareaState =>
+        tareaState._id === data._id ? data : tareaState)
+      setProyecto(proyectoActualizado)
+
+
+
+      setAlerta({})
+      setModalFormularioTarea(false)
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const crearTarea = async (tarea) => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) return
+
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      }
+
+      const { data } = await clienteAxios.post('/tareas', tarea, config)
+      //agrega la tarea al state
+      const proyectoActualizado = { ...proyecto }
+      proyectoActualizado.tareas = [...proyecto.tareas, data]
+      setProyecto(proyectoActualizado)
+      setModalFormularioTarea(false)
+      setAlerta({})
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+
+  const handleEditarTarea = tarea => {
+    setModalFormularioTarea(true)
+    setTarea(tarea)
+  }
+
+  const handleEliminarTarea = async (tarea) => {
+    setTarea(tarea)
+    setModalEliminar(!modalEliminar)
+  }
+
+  const EliminarTarea = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) return
+
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      }
+
+      const { data } = await clienteAxios.delete(`/tareas/${tarea._id}`, config)
+      console.log(data)
+      //creando una copia del proyecto
+      const proyectoActualizado = { ...proyecto }
+      proyectoActualizado.tareas = proyectoActualizado.tareas.filter(tareaE => tareaE._id !== tarea._id)
+
+      setProyecto(proyectoActualizado)
+
+      setAlerta({
+        msg: data.msg,
+        error: false
+      })
+
+      setModalFormularioTarea(false)
+      setTarea({})
+      setModalEliminar(!modalEliminar)
+      
+      setTimeout(() => {
+        setAlerta({})
+      }, [2000])
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
 
   return (
     <ProyectosContext.Provider
@@ -191,7 +309,13 @@ const ProyectosProvider = ({ children }) => {
         cargando1,
         EliminarProyecto,
         handleModalTarea,
-        modalFormularioTarea
+        modalFormularioTarea,
+        submitTarea,
+        handleEliminarTarea,
+        handleEditarTarea,
+        tarea,
+        modalEliminar,
+        EliminarTarea
       }}
     >
       {children}

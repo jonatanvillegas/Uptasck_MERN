@@ -1,12 +1,60 @@
 import { Fragment, useState, useEffect } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import useProyectos from '../hooks/useProyectos'
+import Alerta from './Alerta'
+import { useParams } from 'react-router-dom'
 
 const ModalFormularioTarea = () => {
-    
-    
-    const {modalFormularioTarea, handleModalTarea} = useProyectos();
+    const [id, setid] = useState('');
+    const [nombre, setNombre] = useState('');
+    const [descripcion, setDescripcion] = useState('')
+    const [prioridad, setPrioridad] = useState('')
+    const [fechaEntrega, setFecha] = useState('')
 
+    const params = useParams();
+
+    const OPCIONES = ['Baja', 'Media', 'Alta']
+    
+    const {modalFormularioTarea, handleModalTarea,mostrarAlerta, alerta,submitTarea, tarea} = useProyectos();
+
+    useEffect(()=>{
+        if(tarea?._id){
+            setid(tarea._id)
+            setNombre(tarea.nombre)
+            setDescripcion(tarea.descripcion)
+            setPrioridad(tarea.prioridad)
+            setFecha(tarea.fechaEntrega.split('T')[0])
+            return
+        }
+        setid('')
+        setNombre('')
+        setDescripcion('')
+        setPrioridad('')
+        setFecha('')
+    },[tarea])
+
+    const handleSubmit = async e => {
+        e.preventDefault()
+
+      if([nombre,descripcion,prioridad,fechaEntrega].includes('')){
+        mostrarAlerta({
+            msg:'Todos los campos son obligatorios',
+            error: true
+        })
+        return
+      }
+
+      await submitTarea({id,nombre, descripcion, fechaEntrega, prioridad, proyecto: params.id});
+
+      setid('')
+      setNombre('')
+      setDescripcion('')
+      setPrioridad('')
+      setFecha('')
+    }
+  
+
+    const { msg }= alerta
     return (
         <Transition.Root show={modalFormularioTarea} as={Fragment}>
             <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" onClose={handleModalTarea}>
@@ -58,12 +106,62 @@ const ModalFormularioTarea = () => {
 
                             <div className="sm:flex sm:items-start">
                                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                                    <Dialog.Title as="h3" className="text-lg leading-6 font-bold text-gray-900">
-                                        <h1 className='text-4xl'>formulario tarea</h1>
+                                    <Dialog.Title as="h3" className="text-lg leading-6 font-bold text-gray-900 text-center">
+
+                                       {id ? 'Editar Tarea': 'Crear tarea'}
 
                                     </Dialog.Title>
 
-                                        <p>formulario</p>
+                                        {msg && <Alerta alerta={alerta} />}
+
+                                        <form className='my-6' onSubmit={handleSubmit}>
+                                            <div className='mb-3'>
+                                                <label className='text-gray-600 uppercase font-bold text-sm' htmlFor="nombre">Nombre Tarea</label>
+                                                <input className='border-2 w-full p-2 rounded-md placeholder-gray-400'
+                                                 type="text"
+                                                 id='nombre'
+                                                  placeholder='nombre tarea'
+                                                  value={nombre}
+                                                  onChange={e => setNombre(e.target.value)}
+                                                  />
+                                            </div>
+                                            <div className='mb-3'>
+                                                <label className='text-gray-600 uppercase font-bold text-sm' htmlFor="descripcion">Descripcion</label>
+                                                <textarea className='border-2 w-full p-2 rounded-md placeholder-gray-400'
+                                                 type="text"
+                                                 id='descripcion'
+                                                  placeholder='descripcion'
+                                                  value={descripcion}
+                                                  onChange={e => setDescripcion(e.target.value)}
+                                                  />
+                                            </div>
+                                            <div className='mb-3'>
+                                                <label className='text-gray-600 uppercase font-bold text-sm' htmlFor="fecha-entrega">Fecha Entrega</label>
+                                                <input className='border-2 w-full p-2 rounded-md placeholder-gray-400'
+                                                 type="date"
+                                                 id='fecha-entrega'
+                                                  value={fechaEntrega}
+                                                  onChange={e => setFecha(e.target.value)}
+                                                  />
+                                            </div>
+                                            <div className='mb-3'>
+                                                <label className='text-gray-600 uppercase font-bold text-sm' htmlFor="prioridad">Prioridad</label>
+                                                <select className='border-2 w-full p-2 rounded-md '
+                                                 type="text"
+                                                 id='prioridad'
+                                                  value={prioridad}
+                                                  onChange={e => setPrioridad(e.target.value)}
+                                                  >
+                                                    <option value=''> --seleccione--</option>
+
+                                                    {OPCIONES.map(opcion => (
+                                                        <option key={opcion} >{opcion}</option>
+                                                    ))}
+                                                  </select>
+                                            </div>
+                                                
+                                                <input type="submit" className='bg-purple-500 uppercase w-full cursor-pointer transition-colors rounded-md p-3 text-white' value={id ? "Editar": "crear"} />
+                                        </form>
                                 </div>
                             </div>
                         </div>
