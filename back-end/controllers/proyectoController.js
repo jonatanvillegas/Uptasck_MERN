@@ -5,6 +5,7 @@ const obtenerProyectos = async (req, res) => {
     const proyectos = await Proyecto.find().where('creador').equals(req.usuario)
     res.json(proyectos)
 };
+
 const nuevoProyecto = async (req, res) => {
     const proyecto = new Proyecto(req.body)
     proyecto.creador = req.usuario._id
@@ -20,7 +21,7 @@ const obtenerProyecto = async (req, res) => {
     //obteniendo valor de la url gracias al routing dinamico
     const {id} = req.params
 
-    const proyecto = await Proyecto.findById(id)
+    const proyecto = await Proyecto.findById(id).populate('tareas')
 
     if(!proyecto){
         const error = new Error('Proyecto no valido');
