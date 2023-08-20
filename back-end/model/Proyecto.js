@@ -27,6 +27,12 @@ const proyectosSchema = mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Usuario',
         },
+        tareas: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Tarea',
+            }
+        ],
         colaboradores: [
             //tendra multiples colaboradores el ObjectId se encuentra en el id por defecto que genera al agregar un nuevo usuario
             {
