@@ -14,15 +14,20 @@ const agregarTarea = async (req, res) => {
         const error = new Error('no tienes los permisos')
         return res.status(403).json({ msg: error.message })
     }
+
     try {
         const almacenarTarea = new Tarea(req.body)
+        existeProyecto.tareas.push(almacenarTarea._id);
+        await existeProyecto.save()
         await almacenarTarea.save()
         res.json(almacenarTarea)
+
     } catch (error) {
         console.log(error)
     }
-    res.json(existeProyecto)
+
 }
+
 const obtenerTarea = async (req, res) => {
     const { id } = req.params
     //mostrando toda la informacion con el metodo populate y con la propiedad especificada
@@ -55,9 +60,19 @@ const actualizarTarea = async (req, res) => {
     }
     tarea.nombre = req.body.nombre || tarea.nombre
     tarea.descripcion = req.body.descripcion || tarea.descripcion
-    tarea.estado = req.body.estado || tarea.estado
+    tarea.fechaEntrega = req.body.fechaEntrega || tarea.fechaEntrega 
+    tarea.prioridad = req.body.prioridad || tarea.prioridad 
     
-    res.json(tarea)
+    try {
+        const tareaActualizado = await tarea.save()
+        
+        res.json(tareaActualizado)
+        
+    } catch (error) {
+            error = new Error('Accion no valida');
+        return res.status(404).json({ msg: error.message });
+    }
+   
 }
 const eliminarTarea = async (req, res) => {
     const { id } = req.params
